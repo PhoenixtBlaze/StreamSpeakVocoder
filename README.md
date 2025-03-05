@@ -52,6 +52,8 @@ Optimize inference speed with TensorRT or ONNX.
 
 Fine-tune model for voice cloning tasks.
 
+Will be uploading Inference code and trained checkpoints once it is trained.
+
 
 
 
