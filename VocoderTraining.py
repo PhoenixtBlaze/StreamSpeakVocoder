@@ -153,7 +153,7 @@ def lr_lambda(epoch):
 
 
 
-def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_interval=1, ACCUMULATION_STEPS = 2):
+def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_interval=1, ACCUMULATION_STEPS = 4):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     settings = load_settings()
@@ -174,7 +174,7 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
     learning_rate = 1e-4 * (batch_size / 4)
 
     optimizer_g = optim.AdamW(generator.parameters(), lr=learning_rate, betas=(0.8, 0.99))
-    optimizer_d = optim.AdamW(list(mpd.parameters()) + list(msd.parameters()), lr=1e-4, betas=(0.8, 0.99))
+    optimizer_d = optim.AdamW(list(mpd.parameters()) + list(msd.parameters()), lr=1e-4* (0.98 ** current_epoch), betas=(0.8, 0.99))
 
     scheduler_g = LambdaLR(optimizer_g, lr_lambda=lambda epoch: min(1.0, epoch / 10) if epoch < 10 else 0.999 ** epoch)
     scheduler_d = LambdaLR(optimizer_d, lr_lambda=lambda epoch: min(1.0, epoch / 10) if epoch < 10 else 0.999 ** epoch)
@@ -185,25 +185,28 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
     discriminator_ckpt = os.path.join(CHECKPOINT_DIR, f"discriminator_epoch{current_epoch}.pt")
     optimizer_g_ckpt = os.path.join(CHECKPOINT_DIR, f'optimizer_g_epoch{current_epoch}.pt')
     optimizer_d_ckpt = os.path.join(CHECKPOINT_DIR, f'optimizer_d_epoch{current_epoch}.pt')
-
+    scheduler_d_ckpt = os.path.join(CHECKPOINT_DIR, f'scheduler_d_epoch{current_epoch}.pt')
+    scheduler_g_ckpt = os.path.join(CHECKPOINT_DIR, f'scheduler_g_epoch{current_epoch}.pt')
 
     # Load Generator and Optimizer G
     if os.path.exists(generator_ckpt):
         generator.load_state_dict(torch.load(generator_ckpt, weights_only=True))  
         if os.path.exists(optimizer_g_ckpt): 
             optimizer_g.load_state_dict(torch.load(optimizer_g_ckpt)) 
-            print(f"Loaded generator and optimizer_g from checkpoints: {generator_ckpt}, {optimizer_g_ckpt}")
+            scheduler_g.load_state_dict(torch.load(scheduler_g_ckpt))
+            print(f"Loaded generator, optimizer_g and scheduler_g from checkpoints: {generator_ckpt}, {optimizer_g_ckpt}, {scheduler_g_ckpt}")
         else:
-            print(f"Warning: Optimizer G checkpoint not found, starting fresh.")
+            print(f"Warning: Optimizer or Scheduler G checkpoint not found, starting fresh.")
 
     # Load Discriminator and Optimizer D
     if os.path.exists(discriminator_ckpt):
         discriminator.load_state_dict(torch.load(discriminator_ckpt, weights_only=True))  
         if os.path.exists(optimizer_d_ckpt): 
             optimizer_d.load_state_dict(torch.load(optimizer_d_ckpt)) 
-            print(f"Loaded discriminator and optimizer_d from checkpoints: {discriminator_ckpt}, {optimizer_d_ckpt}")
+            scheduler_d.load_state_dict(torch.load(scheduler_d_ckpt))
+            print(f"Loaded discriminator, optimizer_d and scheduler_d from checkpoints: {discriminator_ckpt}, {optimizer_d_ckpt}, {scheduler_d_ckpt}")
         else:
-            print(f"Warning: Optimizer D checkpoint not found, starting fresh.")
+            print(f"Warning: Optimizer or Scheduler D checkpoint not found, starting fresh.")
 
    
     for param in generator.parameters():
@@ -222,7 +225,7 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
             if len(dataset) == 0:
                 raise ValueError(f"Dataset is empty! No training data found in {data_dir}")
 
-            dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=6, pin_memory=True, persistent_workers=True, collate_fn=collate_fn)
+            dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=6, pin_memory=True, persistent_workers=False, collate_fn=collate_fn)
             
             print(f"Starting epoch {current_epoch + 1} in {subdir}...")
 
@@ -252,14 +255,14 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
                 
                     loss_disc_mpd, _, _ = discriminator_loss(y_d_r_mpd, y_d_g_mpd)
                     loss_disc_msd, _, _ = discriminator_loss(y_d_r_msd, y_d_g_msd)
-                    loss_disc_all = 0.9 * loss_disc_mpd + 0.1 * loss_disc_msd  #Ensures discriminator does not overpower generator
+                    loss_disc_all = 0.75 * loss_disc_mpd + 0.25 * loss_disc_msd  #Ensures discriminator does not overpower generator
 
                     loss_fm_mpd = feature_loss(fmap_r_mpd, fmap_g_mpd)
                     loss_fm_msd = feature_loss(fmap_r_msd, fmap_g_msd)
                     loss_fm = loss_fm_mpd + loss_fm_msd
                     loss_gen_mpd, _ = generator_loss(y_d_g_mpd)
                     loss_gen_msd, _ = generator_loss(y_d_g_msd)
-                    fm_weight = max(1.5, 3.0 * (0.999 ** current_epoch))  #Reduce feature loss weight over time
+                    fm_weight = max(0.8, 2.0 * (0.999 ** current_epoch))  # Reduce feature loss weight over time
                     loss_gen_all = loss_gen_mpd + loss_gen_msd + fm_weight * loss_fm
 
 
@@ -271,7 +274,7 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
                 
 
                 if (i + 1) % ACCUMULATION_STEPS == 0:  # Update every ACCUMULATION_STEPS
-                    #torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
                     scaler.step(optimizer_g)
                     scaler.update()
                     optimizer_g.zero_grad()
@@ -303,6 +306,8 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
                 torch.save(discriminator.state_dict(), os.path.join(CHECKPOINT_DIR, f'discriminator_epoch{current_epoch + 1}.pt'))
                 torch.save(optimizer_d.state_dict(), os.path.join(CHECKPOINT_DIR, f'optimizer_d_epoch{current_epoch + 1}.pt'))
                 torch.save(optimizer_g.state_dict(), os.path.join(CHECKPOINT_DIR, f'optimizer_g_epoch{current_epoch + 1}.pt'))
+                torch.save(scheduler_g.state_dict(), os.path.join(CHECKPOINT_DIR, f'scheduler_g_epoch{current_epoch + 1}.pt'))
+                torch.save(scheduler_d.state_dict(), os.path.join(CHECKPOINT_DIR, f'scheduler_d_epoch{current_epoch + 1}.pt'))
                 print(f"Saved checkpoints for epoch {current_epoch + 1}")
                 
             
