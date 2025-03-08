@@ -1,0 +1,107 @@
+[
+    {
+        "Epoch": 0,
+        "Generator Loss": 478.372926235199,
+        "Discriminator Loss": 271.3458733558655
+    },
+    {
+        "Epoch": 1,
+        "Generator Loss": 294.96873065829277,
+        "Discriminator Loss": 269.5588856935501
+    },
+    {
+        "Epoch": 2,
+        "Generator Loss": 64.77693712711334,
+        "Discriminator Loss": 272.2327313423157
+    },
+    {
+        "Epoch": 3,
+        "Generator Loss": 64.00177043676376,
+        "Discriminator Loss": 255.38920950889587
+    },
+    {
+        "Epoch": 4,
+        "Generator Loss": 62.90020027756691,
+        "Discriminator Loss": 265.2600221633911
+    },
+    {
+        "Epoch": 5,
+        "Generator Loss": 63.2759353518486,
+        "Discriminator Loss": 278.18241941928864
+    },
+    {
+        "Epoch": 6,
+        "Generator Loss": 70.19557332992554,
+        "Discriminator Loss": 318.6866412162781
+    },
+    {
+        "Epoch": 7,
+        "Generator Loss": 68.37946659326553,
+        "Discriminator Loss": 287.93042182922363
+    },
+    {
+        "Epoch": 8,
+        "Generator Loss": 60.82388496398926,
+        "Discriminator Loss": 259.79427003860474
+    },
+    {
+        "Epoch": 9,
+        "Generator Loss": 54.32418245077133,
+        "Discriminator Loss": 250.35162377357483
+    },
+    {
+        "Epoch": 10,
+        "Generator Loss": 74.94029322266579,
+        "Discriminator Loss": 343.8347166776657
+    },
+    {
+        "Epoch": 11,
+        "Generator Loss": 51.0879784822464,
+        "Discriminator Loss": 237.46345973014832
+    },
+    {
+        "Epoch": 12,
+        "Generator Loss": 70.52695852518082,
+        "Discriminator Loss": 317.06446397304535
+    },
+    {
+        "Epoch": 13,
+        "Generator Loss": 67.93142105638981,
+        "Discriminator Loss": 182.58637940883636
+    },
+    {
+        "Epoch": 14,
+        "Generator Loss": 29.371682927012444,
+        "Discriminator Loss": 128.64468026161194
+    },
+    {
+        "Epoch": 15,
+        "Generator Loss": 27.4519861638546,
+        "Discriminator Loss": 120.21173375844955
+    },
+    {
+        "Epoch": 16,
+        "Generator Loss": 62.951057061553,
+        "Discriminator Loss": 148.87736970186234
+    },
+    {
+        "Epoch": 17,
+        "Generator Loss": 32.968995437026024,
+        "Discriminator Loss": 142.82556062936783
+    },
+    {
+        "Epoch": 18,
+        "Generator Loss": 27.280275478959084,
+        "Discriminator Loss": 120.35879862308502
+    },
+    {
+        "Epoch": 19,
+        "Generator Loss": 27.404937520623207,
+        "Discriminator Loss": 121.71489244699478
+    },
+    {
+        "Epoch": 20,
+        "Generator Loss": 36.38650146126747,
+        "Discriminator Loss": 161.69516932964325
+    }
+]
