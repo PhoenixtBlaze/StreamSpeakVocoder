@@ -262,7 +262,7 @@ def train(epochs=500, batch_size=2, data_dir='Training_data/train', checkpoint_i
                     loss_fm = loss_fm_mpd + loss_fm_msd
                     loss_gen_mpd, _ = generator_loss(y_d_g_mpd)
                     loss_gen_msd, _ = generator_loss(y_d_g_msd)
-                    fm_weight = max(0.8, 2.0 * (0.999 ** current_epoch))  # Reduce feature loss weight over time
+                    fm_weight = max(1.2, 2.0 * (0.999 ** current_epoch))  # Reduce feature loss weight over time
                     loss_gen_all = loss_gen_mpd + loss_gen_msd + fm_weight * loss_fm
 
 
